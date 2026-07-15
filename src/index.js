@@ -81,8 +81,8 @@ function gazeFromTwist(msg) {
   if (Math.abs(z) < ANGULAR_DEADZONE) {
     return { gazeX: 0, driving: false };
   }
-  // ROS: +angular.z = CCW / left turn → eyes look left (negative X)
-  return { gazeX: z > 0 ? -1 : 1, driving: true };
+  // +angular.z = left turn → eyes look right (screen +X); flip if teleop feel is wrong
+  return { gazeX: z > 0 ? 1 : -1, driving: true };
 }
 
 function findBrowser() {
