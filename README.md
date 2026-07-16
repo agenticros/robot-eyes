@@ -6,6 +6,7 @@ Fullscreen robot eyes for an Ubuntu tablet, driven by ROS 2 `/cmd_vel` (`geometr
 - Idle: occasional blinks and subtle look-around
 - Turning left (`angular.z > 0`) → eyes look **right**; turning right → look **left**
 - Recenters when not turning / when `/cmd_vel` stops
+- Keyboard teleop (no on-screen overlays): **WASD** drive, **Q** faster, **Z** slower
 
 ## Requirements
 
@@ -33,11 +34,26 @@ npm start
 ```
 
 2. The app will:
-   - Start ROS node `/robot_eyes` subscribed to `/cmd_vel`
+   - Start ROS node `/robot_eyes` (subscribes + publishes `/cmd_vel`)
    - Serve the UI at [http://127.0.0.1:8765/](http://127.0.0.1:8765/)
    - Open a kiosk browser on the tablet display
 
-3. Drive the robot as usual (teleop / robotics.dev). Eye gaze follows turn direction from `/cmd_vel`.
+3. With the eyes window focused, drive with the keyboard (see below). Eye gaze follows turn commands on `/cmd_vel`.
+
+### Keyboard teleop
+
+Focus must be on the eyes browser window (click it once if needed). Nothing extra is drawn on screen.
+
+| Key | Action |
+|-----|--------|
+| `W` | Forward |
+| `S` | Backward |
+| `A` | Turn left |
+| `D` | Turn right |
+| `Q` | Increase speed |
+| `Z` | Decrease speed |
+
+Keys can be combined (e.g. `W`+`A`). Releasing all movement keys publishes a zero Twist. Speed changes are logged in the terminal only.
 
 ### Run without opening a browser
 
@@ -79,13 +95,19 @@ Stop publishing (Ctrl+C) to recenter.
 |----------|---------|---------|
 | `PORT` | `8765` | HTTP / WebSocket port |
 | `CMD_VEL_TOPIC` | `/cmd_vel` | Twist topic |
-| `ANGULAR_DEADZONE` | `0.05` | Ignore small `angular.z` |
+| `ANGULAR_DEADZONE` | `0.05` | Ignore small `angular.z` for gaze |
 | `CMD_TIMEOUT_MS` | `300` | Recenter if no cmd for this long (ms) |
+| `TELOP_LINEAR` | `0.25` | Base forward speed (m/s) at scale 1 |
+| `TELOP_ANGULAR` | `0.9` | Base turn speed (rad/s) at scale 1 |
+| `TELOP_SCALE_STEP` | `0.15` | Q/Z scale change per press |
+| `TELOP_SCALE_MIN` | `0.2` | Minimum speed scale |
+| `TELOP_SCALE_MAX` | `3` | Maximum speed scale |
+| `TELOP_RATE_HZ` | `20` | `/cmd_vel` publish rate while driving |
 | `BROWSER` | auto-detect | Browser binary for kiosk (`firefox`, `chromium`, …) |
 | `DISPLAY` | `:0` | X display used when launching the browser |
 
 Example:
 
 ```bash
-PORT=9000 BROWSER=firefox npm start
+TELOP_LINEAR=0.35 TELOP_ANGULAR=1.0 npm start
 ```
